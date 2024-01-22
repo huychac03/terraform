@@ -3,7 +3,7 @@
 ################################################################################
 
 locals {
-  file_1 = {
+  using_existing_resources = {
     ec2 = {
       EC2_name = "New-EC2-created-by-Terraform"
       ami_id = "ami-0fa377108253bf620"

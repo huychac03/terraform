@@ -1,7 +1,7 @@
 locals {
   var_file = {
-    "1": local.file_1,
-    "2": local.file_1
+    "1": local.using_existing_resources,
+    "2": local.using_existing_resources
   }
 }
 
