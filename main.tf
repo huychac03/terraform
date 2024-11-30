@@ -1,45 +1,52 @@
-# module "vpc" {
-#   source = "./modules/vpc"
-#   # pass any required variables to the VPC module if necessary
-#   azs = ["ap-northeast-2a", "ap-northeast-2b", "ap-northeast-2c"]
-# }
-
-################################################################################
-# Instance - EC2
-################################################################################
-
-module "ec2" {
-  source                 = "./modules/ec2"
-  EC2_name               = local.configuration.ec2.EC2_name
-  ami_id                 = local.configuration.ec2.ami_id
-  instance_type          = local.configuration.ec2.instance_type
-  subnet_id              = local.configuration.ec2.list_public_subnets[0]
-  vpc_security_group_ids = local.configuration.ec2.DevOps_VPC_security_group
-  key_name = local.configuration.ec2.list_key_pair_name[0]
-  root_block_device = local.configuration.ec2.root_block_device
-
-#   EC2_name               = "${var.EC2_name}"
-#   ami_id                 = "${var.ami_id}"
-#   instance_type          = "${var.instance_type}"
-#   subnet_id              = "${var.DevOps_VPC_public_subnets[0]}"
-#   vpc_security_group_ids = [var.DevOps_VPC_security_group[0], var.DevOps_VPC_security_group[1], var.DevOps_VPC_security_group[2]] // take all security group
-#   key_name = "${var.key_pair_name_list[0]}"
-
-
-#  root_block_device_config = var.root_block_device
-
-#   vpc_id                 = module.vpc.vpc_id
-#   subnet_id              = module.vpc.public_subnets[0] 
-#   vpc_id                 = "vpc-62f3c50b"
-#   vpc_security_group_ids = [module.security_group.ec2_security_group_id]
-
+module "vpc" {
+  source = "./vpc"
 }
 
-
-################################################################################
-# Security Group
-################################################################################
-
-# module "security_group" {
-  
+# module "gcr" {
+#   source = "./gcr"
 # }
+
+# module "gce" {
+#   source = "./gce"
+#   gce_network = module.vpc.vpc_id
+#   gce_subnet = module.vpc.pub_subnet_id
+#   depends_on = [ module.vpc ]
+# }
+
+module "gke" {
+  source = "./gke"
+  gke_network = module.vpc.vpc_id
+  gke_subnet = module.vpc.pri_subnet_id
+  list_ip_allocation_policy = module.vpc.list_range_name
+  depends_on = [ module.vpc ]
+}
+
+# module "storage" {
+#   source = "./storage"
+# }
+
+# module "redis" {
+#   source = "./redis"
+#   redis_network = module.vpc.vpc_id
+#   depends_on = [ module.vpc ]
+# }
+
+module "firewall" {
+  source = "./firewall"
+  vpc_name = module.vpc.vpc_name
+  gke_ip_range = module.gke.gke_cluster_ip_range
+  list_internal_sources_range = module.vpc.list_range_ip_cidr
+  depends_on = [ module.vpc ]
+}
+
+# module "ssm" {
+#    source = "./ssm"
+# }
+
+# module "cloud-build" {
+#   source = "./cloud-build"
+# }
+
+module "cloud-armor" {
+  source = "./cloud-armor"
+}
